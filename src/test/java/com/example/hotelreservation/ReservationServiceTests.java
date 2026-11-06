@@ -103,6 +103,16 @@ class ReservationServiceTests {
     }
 
     @Test
+    void rejectsReservationWithCheckInInThePast() {
+        LocalDate pastCheckIn = LocalDate.now().minusDays(1);
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> reservationService.createReservation(validRequest(pastCheckIn, LocalDate.now().plusDays(1))));
+
+        assertEquals("Check-in date cannot be in the past", exception.getMessage());
+        verify(roomRepository, never()).findById(10L);
+    }
+
+    @Test
     void rejectsReservationWhenRoomIsAlreadyBookedForActiveDates() {
         when(roomRepository.findById(10L)).thenReturn(Optional.of(createRoom()));
         when(guestRepository.findById(20L)).thenReturn(Optional.of(createGuest()));
@@ -169,6 +179,17 @@ class ReservationServiceTests {
 
         assertEquals("Reservation not found", exception.getMessage());
         verify(reservationRepository, never()).save(any(ReservationEntity.class));
+    }
+
+    @Test
+    void rejectsDeletingReservationThatDoesNotExist() {
+        when(reservationRepository.existsById(99L)).thenReturn(false);
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> reservationService.deleteReservation(99L));
+
+        assertEquals("Reservation not found", exception.getMessage());
+        verify(reservationRepository, never()).deleteById(99L);
     }
 
     private ReservationRequest validRequest(LocalDate checkIn, LocalDate checkOut) {

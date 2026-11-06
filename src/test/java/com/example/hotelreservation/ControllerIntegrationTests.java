@@ -100,6 +100,16 @@ class ControllerIntegrationTests {
     }
 
     @Test
+    void deletingMissingRoomReturnsNotFound() throws Exception {
+        org.mockito.Mockito.doThrow(new RuntimeException("Room not found"))
+                .when(roomService).deleteRoom(99L);
+
+        mockMvc.perform(delete("/api/rooms/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(errorBody(404, "Not Found", "Room not found", "/api/rooms/99"));
+    }
+
+    @Test
     void postRoomWithInvalidFieldsReturnsBadRequest() throws Exception {
         mockMvc.perform(post("/api/rooms")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -199,6 +209,16 @@ class ControllerIntegrationTests {
     }
 
     @Test
+    void deletingMissingGuestReturnsNotFound() throws Exception {
+        org.mockito.Mockito.doThrow(new RuntimeException("Guest not found"))
+                .when(guestService).deleteGuest(99L);
+
+        mockMvc.perform(delete("/api/guests/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(errorBody(404, "Not Found", "Guest not found", "/api/guests/99"));
+    }
+
+    @Test
     void postGuestWithInvalidEmailReturnsBadRequest() throws Exception {
         mockMvc.perform(post("/api/guests")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -288,6 +308,16 @@ class ControllerIntegrationTests {
     }
 
     @Test
+    void deletingMissingReservationReturnsNotFound() throws Exception {
+        org.mockito.Mockito.doThrow(new RuntimeException("Reservation not found"))
+                .when(reservationService).deleteReservation(99L);
+
+        mockMvc.perform(delete("/api/reservations/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(errorBody(404, "Not Found", "Reservation not found", "/api/reservations/99"));
+    }
+
+    @Test
     void overlappingActiveReservationReturnsConflict() throws Exception {
         LocalDate checkIn = futureCheckIn();
         LocalDate checkOut = checkIn.plusDays(2);
@@ -317,6 +347,23 @@ class ControllerIntegrationTests {
                                 """.formatted(checkIn, checkIn)))
                 .andExpect(status().isBadRequest())
                 .andExpect(errorBody(400, "Bad Request", "Check-out date must be after check-in date",
+                        "/api/reservations"));
+    }
+
+    @Test
+    void pastReservationCheckInReturnsBadRequest() throws Exception {
+        LocalDate checkIn = LocalDate.now().minusDays(1);
+        LocalDate checkOut = LocalDate.now().plusDays(1);
+        when(reservationService.createReservation(org.mockito.ArgumentMatchers.any()))
+                .thenThrow(new RuntimeException("Check-in date cannot be in the past"));
+
+        mockMvc.perform(post("/api/reservations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"roomId":1,"guestId":2,"checkIn":"%s","checkOut":"%s"}
+                                """.formatted(checkIn, checkOut)))
+                .andExpect(status().isBadRequest())
+                .andExpect(errorBody(400, "Bad Request", "Check-in date cannot be in the past",
                         "/api/reservations"));
     }
 

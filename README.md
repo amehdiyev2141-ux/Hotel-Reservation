@@ -1,119 +1,101 @@
-# Hotel Reservation API
+# Hotel Reservation
 
-A REST API for managing hotel rooms, guests, and reservations. The application is built with Spring Boot and persists data in PostgreSQL through Spring Data JPA.
+A full-stack hotel room reservation project with a Spring Boot REST API, PostgreSQL persistence, and a responsive React booking website. The backend API and frontend are deployed on Render.
 
-## Project Overview
-
-The API provides CRUD operations for rooms, guests, and reservations, plus room availability search and reservation cancellation. Reservation creation accepts room and guest IDs, checks availability, calculates the total price, and returns a response DTO.
-
-This repository contains a backend API only. It does not include a frontend, authentication, login/register flows, or JWT security.
+| Service | URL |
+| --- | --- |
+| Live website | <https://hotel-reservation-frontend-f402.onrender.com> |
+| Backend API | <https://hotel-reservation-84x6.onrender.com> |
+| GitHub repository | <https://github.com/amehdiyev2141-ux/Hotel-Reservation> |
 
 ## Features
 
-- **Room management:** Create, list, find, and delete rooms.
-- **Guest management:** Create, list, find, and delete guests.
-- **Reservation management:** Create, list, find, and delete reservations.
-- **Available room search:** Find rooms without an overlapping active reservation for a requested date range.
-- **Reservation cancellation:** Change an active reservation's status to `CANCELLED`; cancellation does not physically delete it.
-- **Automatic total price calculation:** Multiply the nightly room price by the number of nights.
-- **Date validation:** Check-out must be after check-in. The availability search also rejects check-in dates in the past.
-- **Reservation overlap prevention:** An active reservation cannot overlap another active reservation for the same room.
-- **Request validation:** Validate required room fields, guest fields and email format, and reservation request fields.
-- **Global exception handling:** Return a consistent JSON error body for handled exceptions.
-- **Local development CORS:** Allow the configured origins `http://localhost:3000` and `http://localhost:5173` on `/api/**`.
+- Browse rooms returned by the live API, inspect room details, and search room availability by dates.
+- Filter the listing by `SINGLE`, `DOUBLE`, and `SUITE` room types and sort by nightly price.
+- Create guest records and reservations using the existing REST endpoints.
+- Calculate reservation totals as nightly price multiplied by the number of nights.
+- Prevent overlapping active reservations for the same room; cancelled reservations do not block availability.
+- Cancel active reservations without physically deleting them.
+- Validate guest fields, room fields, reservation dates, and request values.
+- Show loading, error, and empty states in the frontend.
+- Keep reservation IDs created in this browser in local storage. There are no accounts or authentication features.
+
+The backend models rooms, guests, and reservations; it does not model hotel names, addresses, amenities, or destination inventory. Frontend hotel imagery and destination stories are editorial examples, not database data. Guest count is not part of the reservation request DTO, and payment is not implemented.
 
 ## Technologies
 
-| Technology | Use in this project |
-| --- | --- |
-| Java 21 | Java toolchain configured in Gradle |
-| Spring Boot 4.1.2 | Application framework |
-| Spring Data JPA | Repository and persistence abstraction |
-| Hibernate | JPA provider managed by Spring Boot |
-| PostgreSQL | Application database and runtime JDBC driver |
-| Gradle Wrapper | Build and run tasks |
-| Lombok | Entity accessors and constructor generation |
-| JUnit 5 | Automated tests |
-| Mockito | Repository and service mocks in unit and MVC-slice tests |
-| Spring Boot Test / MockMvc | Application context and HTTP controller tests |
-| Docker | Multi-stage Java 21 container image for Render or local use |
+### Backend
 
-## Project Structure
+- Java 21
+- Spring Boot 4.1.2
+- Spring Web MVC, Spring Data JPA, Hibernate, Bean Validation
+- PostgreSQL
+- Gradle Wrapper
+- Lombok
+- JUnit 5, Mockito, Spring Boot Test, MockMvc
+- Docker
+
+### Frontend
+
+- JavaScript, React, Vite
+- React Router
+- Axios
+- Responsive CSS
+
+## Architecture and project structure
+
+The repository root contains the Spring Boot API. The separate `hotel-reservation-frontend/` directory contains the React/Vite application. The frontend calls only endpoints implemented by the backend.
 
 ```text
 .
-|-- build.gradle
-|-- Dockerfile
-|-- .dockerignore
-|-- gradlew
-|-- gradlew.bat
-|-- settings.gradle
-|-- gradle/wrapper/
-|   |-- gradle-wrapper.jar
-|   `-- gradle-wrapper.properties
-|-- README.md
-`-- src/
-    |-- main/
-    |   |-- java/com/example/hotelreservation/
-    |   |   |-- HotelReservationApplication.java
-    |   |   |-- config/
-    |   |   |   `-- CorsConfig.java
-    |   |   |-- controller/
-    |   |   |   |-- GuestController.java
-    |   |   |   |-- ReservationController.java
-    |   |   |   `-- RoomController.java
-    |   |   |-- dto/
-    |   |   |   |-- ReservationRequest.java
-    |   |   |   `-- ReservationResponse.java
-    |   |   |-- entity/
-    |   |   |   |-- Guest.java
-    |   |   |   |-- ReservationEntity.java
-    |   |   |   |-- ReservationStatus.java
-    |   |   |   |-- RoomEntity.java
-    |   |   |   `-- RoomType.java
-    |   |   |-- exception/
-    |   |   |   `-- GlobalExceptionHandler.java
-    |   |   |-- repository/
-    |   |   |   |-- GuestRepository.java
-    |   |   |   |-- ReservationRepository.java
-    |   |   |   `-- RoomRepository.java
-    |   |   `-- service/
-    |   |       |-- GuestService.java
-    |   |       |-- ReservationService.java
-    |   |       `-- RoomService.java
-    |   `-- resources/
-    |       |-- application.properties
-    |       `-- schema.sql
-    `-- test/java/com/example/hotelreservation/
-        |-- AvailableRoomsTests.java
-        |-- ControllerIntegrationTests.java
-        |-- GuestServiceTests.java
-        |-- HotelReservationApplicationTests.java
-        |-- ReservationCancellationTests.java
-        |-- ReservationServiceTests.java
-        `-- RoomServiceTests.java
+├── Dockerfile
+├── build.gradle
+├── gradlew / gradlew.bat
+├── src/
+│   ├── main/java/com/example/hotelreservation/
+│   │   ├── config/       # CORS configuration
+│   │   ├── controller/   # Room, guest, reservation REST controllers
+│   │   ├── dto/          # Reservation request and response records
+│   │   ├── entity/       # RoomEntity, Guest, ReservationEntity and enums
+│   │   ├── exception/    # Global REST exception handler
+│   │   ├── repository/   # Spring Data JPA repositories
+│   │   └── service/      # Reservation and room business rules
+│   ├── main/resources/
+│   │   ├── application.properties
+│   │   ├── schema.sql
+│   │   └── seed-sample-rooms.sql
+│   └── test/java/com/example/hotelreservation/
+└── hotel-reservation-frontend/
+    ├── src/components/
+    ├── src/pages/
+    ├── src/services/    # Axios API calls and browser reservation ID storage
+    ├── package.json
+    └── vite.config.js
 ```
 
-## Database Configuration
+## Local setup
 
-The application uses PostgreSQL. The current local datasource settings are in `src/main/resources/application.properties`; Spring environment variables can override them. For production, configure connection details and credentials through the deployment environment, and do not commit real passwords or secrets.
+### Requirements
 
-The application reads database settings from these environment variables:
+- Java 21
+- Node.js supported by the installed Vite version and npm
+- PostgreSQL 16 or compatible PostgreSQL
+- Docker, if you want to run PostgreSQL in a container
+- Git
 
-| Variable | Example |
-| --- | --- |
-| `DB_URL` | `jdbc:postgresql://localhost:5432/hotel_db` |
-| `DB_USERNAME` | `hotel_user` |
-| `DB_PASSWORD` | `replace-with-a-local-password` |
-
-The URL and username have local-development defaults in `application.properties`; set all three variables explicitly in deployment. The password has no default. The examples above are placeholders for local development. Use the same database name, user, and password when starting PostgreSQL and the application.
-
-### Start PostgreSQL with Docker (optional)
-
-There is no Docker Compose configuration in the repository. To run a local PostgreSQL container manually, use a development-only password and replace it with your own value:
+### 1. Clone the repository
 
 ```powershell
-docker run --name hotel-reservation-postgres `
+git clone https://github.com/amehdiyev2141-ux/Hotel-Reservation.git
+Set-Location Hotel-Reservation
+```
+
+### 2. Start a local PostgreSQL database (optional Docker method)
+
+Use a local development password and keep it out of source control. This creates a new local container; it does not connect to or alter the production database.
+
+```powershell
+docker run --name hotel-postgres `
   -e POSTGRES_DB=hotel_db `
   -e POSTGRES_USER=hotel_user `
   -e POSTGRES_PASSWORD=replace-with-a-local-password `
@@ -121,116 +103,97 @@ docker run --name hotel-reservation-postgres `
   -d postgres:16
 ```
 
-To stop the container:
+For a container that already exists, use `docker start hotel-postgres`. The project has no Docker Compose file.
 
-```powershell
-docker stop hotel-reservation-postgres
-```
+### 3. Configure and run the backend
 
-To start the existing container again:
-
-```powershell
-docker start hotel-reservation-postgres
-```
-
-Hibernate is configured with `ddl-auto=update`. SQL initialization is deferred until after Hibernate initializes the schema. `schema.sql` updates the reservation status constraint and converts legacy `CANCELED` values to `CANCELLED` when the application starts.
-
-## Installation and Setup
-
-### Prerequisites
-
-- Java 21
-- Git
-- PostgreSQL 16 or another compatible PostgreSQL version
-- Docker only if you plan to use the optional container command above
-
-### 1. Clone the repository
-
-Replace the example repository URL with the actual URL for your Git remote:
-
-```powershell
-git clone https://github.com/OWNER/REPOSITORY.git
-Set-Location REPOSITORY
-```
-
-### 2. Start PostgreSQL
-
-Start a local PostgreSQL server or use the optional Docker command above. Ensure the database, username, and password match the application settings you will provide.
-
-### 3. Configure the datasource
-
-In the same PowerShell session used to run Gradle, set the datasource variables. Update the URL, username, and password for your local database:
+Set these variables in the PowerShell session that will run Gradle. Use credentials for your local database; never put production secrets in README or source files.
 
 ```powershell
 $env:DB_URL = "jdbc:postgresql://localhost:5432/hotel_db"
 $env:DB_USERNAME = "hotel_user"
 $env:DB_PASSWORD = "replace-with-a-local-password"
-```
 
-### 4. Build the application
-
-```powershell
-.\gradlew.bat clean build
-```
-
-### 5. Start Spring Boot
-
-```powershell
 .\gradlew.bat bootRun
 ```
 
-The API is available at `http://localhost:8080` by default.
+The API listens on `http://localhost:8080` by default. JPA uses `spring.jpa.hibernate.ddl-auto=update`; it updates the schema without dropping the database. The password is supplied through `DB_PASSWORD`.
 
-## API Documentation
+### 4. Run the frontend
 
-All endpoints are rooted at `/api`. Reservation and guest endpoints use the DTO/entity fields described below. No `PUT` endpoint is currently implemented.
+Open another PowerShell window:
+
+```powershell
+Set-Location Hotel-Reservation\hotel-reservation-frontend
+Copy-Item .env.example .env.local
+npm install
+npm run dev -- --host 0.0.0.0 --port 5173 --strictPort
+```
+
+Open <http://localhost:5173>. The `.env.example` sets `VITE_API_BASE_URL` to the live API. To use a local backend instead, set it in `.env.local`:
+
+```dotenv
+VITE_API_BASE_URL=http://localhost:8080
+```
+
+Vite reads environment variables when it starts, so restart the dev server after changing `.env.local`.
+
+## Environment variables
+
+| Variable | Used by | Description |
+| --- | --- | --- |
+| `DB_URL` | Backend | JDBC URL; local default is `jdbc:postgresql://localhost:5432/hotel_db` |
+| `DB_USERNAME` | Backend | PostgreSQL username; local default is `hotel_user` |
+| `DB_PASSWORD` | Backend | PostgreSQL password; configure outside source control |
+| `PORT` | Backend | HTTP port; defaults to `8080` |
+| `VITE_API_BASE_URL` | Frontend build | Backend base URL; set to `https://hotel-reservation-84x6.onrender.com` in the Render Static Site environment |
+
+## API
+
+All endpoints are under `/api`. JSON dates use the `YYYY-MM-DD` format. The frontend does not use the global reservation listing endpoint as a user's private list: it stores its own created reservation IDs in this browser and loads them individually.
 
 ### Rooms
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| `GET` | `/api/rooms` | List all rooms |
+| `GET` | `/api/rooms` | List rooms |
 | `POST` | `/api/rooms` | Create a room |
-| `GET` | `/api/rooms/{id}` | Get a room by ID |
+| `GET` | `/api/rooms/{id}` | Get a room |
 | `DELETE` | `/api/rooms/{id}` | Delete a room |
-| `GET` | `/api/rooms/available?checkIn={date}&checkOut={date}` | List rooms available for the date range |
-
-Availability dates use ISO format (`YYYY-MM-DD`).
+| `GET` | `/api/rooms/available?checkIn=YYYY-MM-DD&checkOut=YYYY-MM-DD` | Find available rooms |
 
 ### Guests
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| `GET` | `/api/guests` | List all guests |
+| `GET` | `/api/guests` | List guests |
 | `POST` | `/api/guests` | Create a guest |
-| `GET` | `/api/guests/{id}` | Get a guest by ID |
+| `GET` | `/api/guests/{id}` | Get a guest |
 | `DELETE` | `/api/guests/{id}` | Delete a guest |
 
 ### Reservations
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| `GET` | `/api/reservations` | List reservations as `ReservationResponse` objects |
-| `POST` | `/api/reservations` | Create a reservation from a `ReservationRequest` |
-| `GET` | `/api/reservations/{id}` | Get one reservation as a `ReservationResponse` |
+| `GET` | `/api/reservations` | List reservation responses |
+| `POST` | `/api/reservations` | Create a reservation |
+| `GET` | `/api/reservations/{id}` | Get a reservation response |
+| `PATCH` | `/api/reservations/{id}/cancel` | Cancel an active reservation |
 | `DELETE` | `/api/reservations/{id}` | Physically delete a reservation |
-| `PATCH` | `/api/reservations/{id}/cancel` | Change an active reservation's status to `CANCELLED` |
 
-## Request Examples
+### Example requests
 
-### Create a room
-
-`RoomType` accepts `SINGLE`, `DOUBLE`, or `SUITE`.
+Create a room (enum values are `SINGLE`, `DOUBLE`, and `SUITE`):
 
 ```json
 {
-  "number": 101,
-  "type": "DOUBLE",
-  "pricePerNight": 125.00
+  "number": 102,
+  "type": "SINGLE",
+  "pricePerNight": 95.00
 }
 ```
 
-### Create a guest
+Create a guest:
 
 ```json
 {
@@ -240,9 +203,7 @@ Availability dates use ISO format (`YYYY-MM-DD`).
 }
 ```
 
-### Create a reservation
-
-The request contains IDs and dates; the server loads the room and guest and calculates `totalPrice` and `status`.
+Create a reservation (`ReservationRequest`):
 
 ```json
 {
@@ -253,7 +214,7 @@ The request contains IDs and dates; the server loads the room and guest and calc
 }
 ```
 
-A reservation response uses this shape:
+The server calculates the price and status. A `ReservationResponse` is shaped like:
 
 ```json
 {
@@ -264,35 +225,32 @@ A reservation response uses this shape:
   "guestName": "Aysel Mammadova",
   "checkIn": "2026-12-10",
   "checkOut": "2026-12-13",
-  "totalPrice": 375.00,
+  "totalPrice": 360.00,
   "status": "ACTIVE"
 }
 ```
 
-## Business Rules and Validation
+## Reservation rules, validation, and errors
 
-- Check-out must be later than check-in.
-- The available-room search rejects a check-in date earlier than today. Reservation creation itself currently validates the date order but does not reject a past check-in date.
-- A room cannot have overlapping reservations with `ACTIVE` status. The overlap check uses `existing.checkIn < requested.checkOut` and `existing.checkOut > requested.checkIn`, so a reservation ending on the requested check-in date does not overlap.
-- `CANCELLED` reservations are excluded from the availability query and do not block a new reservation.
-- Total price is the number of nights multiplied by the room's `pricePerNight`.
-- New reservations receive `ACTIVE` status.
-- Cancellation changes status to `CANCELLED`; it does not physically delete the reservation. The separate `DELETE` endpoint physically deletes it.
-- Room validation requires `number`, `type`, and a positive `pricePerNight`.
-- Guest validation requires `fullName`, `email`, and `phoneNumber`; email must have a valid format.
-- Reservation requests require `roomId`, `guestId`, `checkIn`, and `checkOut`.
+- `checkIn` cannot be in the past, both for availability searches and reservation creation.
+- `checkOut` must be later than `checkIn`.
+- A reservation needs an existing room and guest.
+- Guest name, email, and phone are required; email must be valid.
+- Room number and type are required, and nightly price must be positive.
+- Room types are persisted by enum name: `SINGLE`, `DOUBLE`, `SUITE`.
+- Only overlapping `ACTIVE` reservations block a room. `CANCELLED` reservations do not.
+- Total price is `nights × pricePerNight`; newly created reservations start as `ACTIVE`.
+- Cancellation changes status to `CANCELLED`; the separate `DELETE` endpoint physically deletes a reservation.
 
-## Error Handling
+Handled errors return a JSON object with `timestamp`, `status`, `error`, `message`, and `path`.
 
-Handled errors use the following status codes:
-
-| Status | Meaning |
+| Status | Typical case |
 | --- | --- |
-| `400 Bad Request` | Invalid room/guest/reservation request fields or invalid reservation dates |
-| `404 Not Found` | Room, guest, or reservation was not found |
-| `409 Conflict` | The room is already booked for overlapping dates, or a cancelled reservation is cancelled again |
+| `400 Bad Request` | Invalid fields, malformed dates, or invalid date range |
+| `404 Not Found` | Room, guest, or reservation ID does not exist |
+| `409 Conflict` | An active reservation overlaps the requested dates, or a cancelled reservation is cancelled again |
 
-Error responses contain `timestamp`, `status`, `error`, `message`, and `path`:
+Example:
 
 ```json
 {
@@ -304,29 +262,65 @@ Error responses contain `timestamp`, `status`, `error`, `message`, and `path`:
 }
 ```
 
-## Testing
+## Sample room data
 
-The current test report contains **63 passing tests**. This is a snapshot of the suite at the time this README was prepared; run the command below for the current result after tests change.
+`src/main/resources/seed-sample-rooms.sql` is a manual PostgreSQL script for rooms 102–105. It inserts only when that room number is absent, locks the room table for the transaction, and does not update or delete existing rooms or reservations. It is deliberately not named `data.sql` and is not automatically executed when the application starts. Start the backend once first so Hibernate has created `room_entity`, then run the script against the intended database.
 
-- **Service unit tests** (`RoomServiceTests`, `GuestServiceTests`, `ReservationServiceTests`, and `ReservationCancellationTests`) use Mockito repository mocks and do not use a database.
-- **Controller HTTP tests** (`ControllerIntegrationTests`) use Spring Boot's `@WebMvcTest` and MockMvc, with service beans mocked. They verify routing, JSON serialization, validation, and exception responses without connecting to a database.
-- **Application/availability tests** (`HotelReservationApplicationTests` and `AvailableRoomsTests`) load the Spring application and JPA repositories. They use the datasource configured for the test run; the project currently has no H2 dependency, so run them with a reachable PostgreSQL database. The optional Docker PostgreSQL instructions above can provide one locally.
+For Render PostgreSQL, use the database's external connection details and a PostgreSQL client. Do not paste credentials into source control or commit a connection URL. For example, provide the host, port, database, and user interactively and let `psql` prompt for the password:
 
-Run all tests and the build from Windows PowerShell:
+```powershell
+psql -h "your-render-external-host" -p 5432 -U "your-database-user" -d "your-database-name" -W -v ON_ERROR_STOP=1 -f src/main/resources/seed-sample-rooms.sql
+```
 
-Set `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` to a reachable PostgreSQL test database first. The application-context and availability tests use the configured datasource.
+The script is safe to run again: numbers already present are skipped, so existing room values are left untouched. Verify the results with:
+
+```sql
+SELECT id, number, type, price_per_night
+FROM room_entity
+WHERE number IN (102, 103, 104, 105)
+ORDER BY number;
+```
+
+## Tests and builds
+
+Run the backend suite and clean build from the repository root:
 
 ```powershell
 .\gradlew.bat test
-.\gradlew.bat build
+.\gradlew.bat clean build
 ```
 
-## Deployment (Render)
+Mockito service tests and MockMvc controller tests do not require a real database. `AvailableRoomsTests` and `HotelReservationApplicationTests` load the Spring application and need the configured PostgreSQL datasource. Point `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` at a local disposable test database before running the full suite; do not use production data for tests.
 
-The repository now includes a multi-stage `Dockerfile` for a Java 21 image. Deployment is **not completed**. Connect the Git repository to a Render Web Service using the Docker runtime, then provide `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` in the service's environment settings. The container reads Render's `PORT` variable and defaults to port 8080 when it is absent. Do not commit production secrets. Render's dashboard applies environment variable changes to the selected service and deploys them when requested ([Render environment variables](https://render.com/docs/configure-environment-variables)); see also [Render Docker deployments](https://render.com/docs/docker).
+Build the frontend from its directory:
 
-No Render service URL is listed because deployment has not been completed.
+```powershell
+Set-Location hotel-reservation-frontend
+npm install
+npm run build
+```
+
+## Render deployment
+
+The backend and frontend are already deployed on Render. The current deployment layout is:
+
+### Backend — Render Web Service
+
+- Root directory: repository root
+- Runtime: Docker, using the root `Dockerfile`
+- Java runtime: Java 21
+- Configure `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` in the Render service environment. The container uses Render's `PORT` value and defaults to port `8080`.
+- Do not commit or publish production credentials.
+
+### Frontend — Render Static Site
+
+- Root directory: `hotel-reservation-frontend`
+- Build command: `npm install && npm run build`
+- Publish directory: `dist`
+- Environment variable: `VITE_API_BASE_URL=https://hotel-reservation-84x6.onrender.com`
+
+Backend CORS allows the deployed website origin and local Vite origins `http://localhost:3000` and `http://localhost:5173`.
 
 ## License
 
-No license file is present in this repository. No license is declared here; add a license file if the project owner chooses to publish one.
+No license file is currently included in the repository.

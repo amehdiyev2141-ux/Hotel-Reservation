@@ -43,6 +43,10 @@ export default function BookingPage() {
   async function submit(event) {
     event.preventDefault();
     setError('');
+    if (checkIn < dateString(new Date())) {
+      setError('Check-in cannot be in the past. Choose today or a future date.');
+      return;
+    }
     if (checkOut <= checkIn) {
       setError('Check-out must be after check-in.');
       return;

@@ -12,7 +12,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -71,18 +70,21 @@ class GuestServiceTests {
 
     @Test
     void deletesGuestById() {
+        when(guestRepository.existsById(1L)).thenReturn(true);
+
         guestService.deleteGuest(1L);
 
         verify(guestRepository).deleteById(1L);
     }
 
     @Test
-    void propagatesGuestNotFoundWhenRepositoryReportsMissingGuestDuringDelete() {
-        doThrow(new RuntimeException("Guest not found")).when(guestRepository).deleteById(99L);
+    void rejectsDeletingGuestThatDoesNotExist() {
+        when(guestRepository.existsById(99L)).thenReturn(false);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> guestService.deleteGuest(99L));
 
         assertEquals("Guest not found", exception.getMessage());
+        verify(guestRepository, org.mockito.Mockito.never()).deleteById(99L);
     }
 
     private Guest createGuest(Long id, String fullName, String email, String phoneNumber) {

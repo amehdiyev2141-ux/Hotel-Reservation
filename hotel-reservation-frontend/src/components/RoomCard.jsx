@@ -16,7 +16,7 @@ export function photoForRoom(id) {
 }
 
 export default function RoomCard({ room, dates }) {
-  const type = room.type?.toLowerCase() || 'guest room';
+  const type = room.type ? room.type[0] + room.type.slice(1).toLowerCase() : 'Guest';
   const query = dates?.checkIn && dates?.checkOut
     ? `?checkIn=${dates.checkIn}&checkOut=${dates.checkOut}`
     : '';
@@ -30,7 +30,7 @@ export default function RoomCard({ room, dates }) {
       </Link>
       <div className="room-card-body">
         <div className="room-card-kicker"><span>{type} stay</span><span><Icon name="bed" size={15} /> Room {room.number}</span></div>
-        <h3><Link to={`/hotels/${room.id}${query}`}>{room.type || 'Guest'} room, thoughtfully kept</Link></h3>
+        <h3><Link to={`/hotels/${room.id}${query}`}>{type} room, thoughtfully kept</Link></h3>
         <div className="room-card-bottom"><p><strong>${Number(room.pricePerNight).toFixed(0)}</strong><span> / night</span></p><Link className="text-link" to={`/hotels/${room.id}${query}`}>View details <Icon name="chevron" size={15} /></Link></div>
       </div>
     </article>

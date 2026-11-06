@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -40,6 +41,9 @@ public class ReservationService {
 
         if (!request.checkOut().isAfter(request.checkIn())) {
             throw new RuntimeException("Check-out date must be after check-in date");
+        }
+        if (request.checkIn().isBefore(LocalDate.now())) {
+            throw new RuntimeException("Check-in date cannot be in the past");
         }
 
         RoomEntity room = roomRepository.findById(request.roomId())
@@ -85,6 +89,9 @@ public class ReservationService {
     }
 
     public void deleteReservation(Long id) {
+        if (!reservationRepository.existsById(id)) {
+            throw new RuntimeException("Reservation not found");
+        }
         reservationRepository.deleteById(id);
     }
 

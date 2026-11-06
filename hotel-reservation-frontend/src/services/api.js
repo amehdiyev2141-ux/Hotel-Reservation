@@ -10,6 +10,8 @@ export const getRooms = async () => (await api.get('/api/rooms')).data;
 
 export const getRoom = async (id) => (await api.get(`/api/rooms/${id}`)).data;
 
+export const getGuest = async (id) => (await api.get(`/api/guests/${id}`)).data;
+
 export const getAvailableRooms = async (checkIn, checkOut) =>
   (await api.get('/api/rooms/available', { params: { checkIn, checkOut } })).data;
 

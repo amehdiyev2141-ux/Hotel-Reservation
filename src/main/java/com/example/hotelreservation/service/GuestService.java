@@ -27,6 +27,9 @@ public class GuestService {
     }
 
     public void deleteGuest(Long id) {
+        if (!guestRepository.existsById(id)) {
+            throw new RuntimeException("Guest not found");
+        }
         guestRepository.deleteById(id);
     }
 }

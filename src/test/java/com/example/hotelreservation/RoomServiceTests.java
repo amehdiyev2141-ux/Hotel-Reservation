@@ -15,7 +15,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -62,18 +61,21 @@ class RoomServiceTests {
 
     @Test
     void deletesRoomById() {
+        when(roomRepository.existsById(1L)).thenReturn(true);
+
         roomService.deleteRoom(1L);
 
         verify(roomRepository).deleteById(1L);
     }
 
     @Test
-    void propagatesRoomNotFoundWhenRepositoryReportsMissingRoomDuringDelete() {
-        doThrow(new RuntimeException("Room not found")).when(roomRepository).deleteById(99L);
+    void rejectsDeletingRoomThatDoesNotExist() {
+        when(roomRepository.existsById(99L)).thenReturn(false);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> roomService.deleteRoom(99L));
 
         assertEquals("Room not found", exception.getMessage());
+        verify(roomRepository, org.mockito.Mockito.never()).deleteById(99L);
     }
 
     @Test
