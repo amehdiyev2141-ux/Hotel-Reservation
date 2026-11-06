@@ -36,12 +36,15 @@ This repository contains a backend API only. It does not include a frontend, aut
 | JUnit 5 | Automated tests |
 | Mockito | Repository and service mocks in unit and MVC-slice tests |
 | Spring Boot Test / MockMvc | Application context and HTTP controller tests |
+| Docker | Multi-stage Java 21 container image for Render or local use |
 
 ## Project Structure
 
 ```text
 .
 |-- build.gradle
+|-- Dockerfile
+|-- .dockerignore
 |-- gradlew
 |-- gradlew.bat
 |-- settings.gradle
@@ -95,15 +98,15 @@ This repository contains a backend API only. It does not include a frontend, aut
 
 The application uses PostgreSQL. The current local datasource settings are in `src/main/resources/application.properties`; Spring environment variables can override them. For production, configure connection details and credentials through the deployment environment, and do not commit real passwords or secrets.
 
-The supported Spring environment variables are:
+The application reads database settings from these environment variables:
 
 | Variable | Example |
 | --- | --- |
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/hotel_db` |
-| `SPRING_DATASOURCE_USERNAME` | `hotel_user` |
-| `SPRING_DATASOURCE_PASSWORD` | `replace-with-a-local-password` |
+| `DB_URL` | `jdbc:postgresql://localhost:5432/hotel_db` |
+| `DB_USERNAME` | `hotel_user` |
+| `DB_PASSWORD` | `replace-with-a-local-password` |
 
-The examples above are placeholders for local development. Use the same database name, user, and password when starting PostgreSQL and the application.
+The URL and username have local-development defaults in `application.properties`; set all three variables explicitly in deployment. The password has no default. The examples above are placeholders for local development. Use the same database name, user, and password when starting PostgreSQL and the application.
 
 ### Start PostgreSQL with Docker (optional)
 
@@ -159,9 +162,9 @@ Start a local PostgreSQL server or use the optional Docker command above. Ensure
 In the same PowerShell session used to run Gradle, set the datasource variables. Update the URL, username, and password for your local database:
 
 ```powershell
-$env:SPRING_DATASOURCE_URL = "jdbc:postgresql://localhost:5432/hotel_db"
-$env:SPRING_DATASOURCE_USERNAME = "hotel_user"
-$env:SPRING_DATASOURCE_PASSWORD = "replace-with-a-local-password"
+$env:DB_URL = "jdbc:postgresql://localhost:5432/hotel_db"
+$env:DB_USERNAME = "hotel_user"
+$env:DB_PASSWORD = "replace-with-a-local-password"
 ```
 
 ### 4. Build the application
@@ -311,6 +314,8 @@ The current test report contains **63 passing tests**. This is a snapshot of the
 
 Run all tests and the build from Windows PowerShell:
 
+Set `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` to a reachable PostgreSQL test database first. The application-context and availability tests use the configured datasource.
+
 ```powershell
 .\gradlew.bat test
 .\gradlew.bat build
@@ -318,7 +323,7 @@ Run all tests and the build from Windows PowerShell:
 
 ## Deployment (Render)
 
-Deployment is **not configured or completed** in this repository. Render supports JVM applications through its Docker runtime, but this repository currently has no `Dockerfile`; add and verify one before creating the Render web service. In Render, connect the Git repository, select the Docker runtime, configure the service to listen on Render's assigned port, and provide the PostgreSQL connection using environment variables such as `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, and `SPRING_DATASOURCE_PASSWORD`. Do not commit production secrets. Render's dashboard applies environment variable changes to the selected service and deploys them when requested ([Render environment variables](https://render.com/docs/configure-environment-variables)); see also [Render Docker deployments](https://render.com/docs/docker).
+The repository now includes a multi-stage `Dockerfile` for a Java 21 image. Deployment is **not completed**. Connect the Git repository to a Render Web Service using the Docker runtime, then provide `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` in the service's environment settings. The container reads Render's `PORT` variable and defaults to port 8080 when it is absent. Do not commit production secrets. Render's dashboard applies environment variable changes to the selected service and deploys them when requested ([Render environment variables](https://render.com/docs/configure-environment-variables)); see also [Render Docker deployments](https://render.com/docs/docker).
 
 No Render service URL is listed because deployment has not been completed.
 

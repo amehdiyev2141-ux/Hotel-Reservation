@@ -1,0 +1,14 @@
+.git
+.gradle
+build
+.idea
+out
+*.iml
+*.ipr
+*.iws
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.*
+!.env.example
