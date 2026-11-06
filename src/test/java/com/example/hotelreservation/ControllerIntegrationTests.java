@@ -8,6 +8,7 @@ import com.example.hotelreservation.entity.RoomType;
 import com.example.hotelreservation.service.GuestService;
 import com.example.hotelreservation.service.ReservationService;
 import com.example.hotelreservation.service.RoomService;
+import com.example.hotelreservation.service.RoomSeedService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -43,6 +44,9 @@ class ControllerIntegrationTests {
 
     @MockitoBean
     private ReservationService reservationService;
+
+    @MockitoBean
+    private RoomSeedService roomSeedService;
 
     @Test
     void getRoomsReturnsAllRooms() throws Exception {
